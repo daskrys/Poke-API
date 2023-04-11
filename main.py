@@ -12,8 +12,9 @@ def get_pokemon_info(pokemon):
         print(f"Error: Received status code {response.status_code}")
         
         return None
-    
-pokemon = 'fidough'
+
+print('Enter a Pokemon: ')
+pokemon = input()
 pokemon_data = get_pokemon_info(pokemon)
 pokemon_location = requests.get(pokemon_data['location_area_encounters']).json()
 
