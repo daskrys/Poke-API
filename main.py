@@ -9,25 +9,33 @@ from kivy.uix.button import Button
 from kivy.uix.image import Image
 from kivy.core.window import Window
 
-Window.size = (400, 500)
+Window.size = (500, 750)
 
 class MyApp(App):
 
     def build(self):
-        self.title = "Poke Location"    
-        layout = BoxLayout(orientation="vertical", padding=10, spacing=10)
+        self.title = "Poke Location"
+
+        layout = BoxLayout(orientation="vertical")
+        slayout = GridLayout(cols=2, padding=1, spacing=1)
+        
         app_image = Image(source="pokeball.png")
 
         self.input = TextInput(text="", multiline=False, size_hint=(None, None), height=50, width=200, pos_hint={'center_x': 0.5, 'center_y': 0.5})
-        self.submit_button = Button(text="Submit", size_hint=(None, None), height=50, width=200, pos_hint={'center_x': 0.5}, on_press=self.update_label)
-        self.result_label = Label(text="Enter a Pokemon", height=50)
+        self.submit_button = Button(text="Submit", size_hint=(None, None), height=50, width=100, pos_hint={'center_x': 0.5}, on_press=self.update_label)
+        self.result_label = Label(text="Enter a Pokemon", height=50, font_size="13sp")
+        self.location_label = Label(text="", height=50, font_size="11sp")
 
         self.status_code = 0
 
         layout.add_widget(app_image)
+        slayout.add_widget(self.result_label)
+        slayout.add_widget(self.location_label)
+        layout.add_widget(slayout)
         layout.add_widget(self.input)
         layout.add_widget(self.submit_button)
-        layout.add_widget(self.result_label)
+        #layout.add_widget(self.result_label)
+        #layout.add_widget(self.location_label)
 
         return layout
     
@@ -51,13 +59,31 @@ class MyApp(App):
         pokemon_data = self.get_pokemon(self.input.text)   
 
         if pokemon_data:
+
             pokemon_location = requests.get(pokemon_data['location_area_encounters']).json()
+            pokemon_name = pokemon_data['name'].title()
+            pokemon_height = round(pokemon_data['height'] * 0.1, 2)
+            pokemon_weight = round(pokemon_data['weight'] * 0.1, 2)
+            pokemon_types = pokemon_data['types']
             
-            self.result_label.text = f"Name: {pokemon_data['name'].title()}\n"
-            self.result_label.text += f"Height: {pokemon_data['height'] * 0.1}m\nWeight: {pokemon_data['weight'] * 0.1}kg\nTypes:"
+            self.result_label.text = f"Name: {pokemon_name}\n"
+            self.result_label.text += f"Height: {pokemon_height}m\nWeight: {pokemon_weight}kg\n\nTypes:"
 
-    #response = requests.get('https://pokeapi.co/api/v2/pokemon/ditto')
-    #print(response.json())
+            for i in pokemon_types:
+                self.result_label.text += f"\n- {i['type']['name'].title()}"
+            
+            if pokemon_location:
 
+                counter = 0
+
+                self.location_label.text = "\nLocations: "
+
+                for i in pokemon_location:
+
+                    if counter < 25:
+                        self.location_label.text += f"\n- {i['location_area']['name'].title()}"
+
+                    counter += 1
+                    
 if __name__ == '__main__':
     MyApp().run()
